@@ -1,0 +1,26 @@
+name: chips
+on:
+  schedule:
+    - cron: "15 7 * * 1-5"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests pandas lxml beautifulsoup4
+      - run: python chips.py --html
+      - run: |
+          mkdir -p docs
+          cp $(ls -t chips_*.html | head -1) docs/index.html
+      - run: |
+          git config user.name github-actions
+          git config user.email actions@github.com
+          git add docs/index.html
+          git commit -m "update" || exit 0
+          git push
